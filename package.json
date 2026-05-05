@@ -1,5 +1,5 @@
 {
-  "name": "gearscout-collection-2026",
+  "name": "gearscout-collection-base",
   "type": "module",
   "scripts": {
     "dev": "vite",

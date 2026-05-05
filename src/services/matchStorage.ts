@@ -11,6 +11,7 @@ import {
   IStoredMatch,
   IUser,
 } from "../model/Models";
+import { sanitizeInput } from "@/utils/sanitization";
 import gearscoutService, { isAxiosError } from "./gearscout-services";
 import { showError, showSuccess } from "../utils/notifications";
 import { logger } from "../utils/logger";
@@ -98,7 +99,8 @@ export function saveMatchToStorage(
     const newMatch: IStoredMatch = {
       ...matchData,
       matchNumber: matchNum,
-      robotNumber: robotNum,
+      // sanitize robot number to avoid accidental injection or whitespace
+      robotNumber: sanitizeInput(robotNum),
       timestamp: Date.now(),
       submitted: false,
     };
@@ -300,6 +302,8 @@ function convertStoredMatchToAPIFormat(
     robotNumber: storedMatch.robotNumber,
     creator: userData.scouterName,
     allianceColor: storedMatch.allianceColor,
+    // Include the original local timestamp so backend and analytics have submission timing
+    submittedAt: storedMatch.timestamp,
     objectives,
   };
 }

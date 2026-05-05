@@ -1,1 +1,0 @@
-const a=typeof import.meta<"u";function n(o,...s){const r=globalThis.console,e=r==null?void 0:r[o];e&&(a&&o!=="warn"&&o!=="error"||e.apply(r,s))}const i={debug:(...o)=>n("debug",...o),info:(...o)=>n("info",...o),warn:(...o)=>n("warn",...o),error:(...o)=>n("error",...o)};export{i as l};

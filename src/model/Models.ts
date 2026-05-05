@@ -31,6 +31,8 @@ export interface IMatch {
   creator: string;
   allianceColor: AllianceColor;
   objectives: IObjective[];
+  // Timestamp when this match was submitted (ms since epoch). Optional when not available.
+  submittedAt?: number;
 }
 
 /**

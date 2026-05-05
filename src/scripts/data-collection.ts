@@ -508,6 +508,15 @@ export function initializeDataCollection(): (() => void) | void {
   }
 
   allianceButtons.forEach((button) => {
+    // Ensure keyboard activation also works for custom buttons
+    button.addEventListener("keydown", (ev) => {
+      const kev = ev as KeyboardEvent;
+      if (kev.key === "Enter" || kev.key === " ") {
+        kev.preventDefault();
+        (button as HTMLButtonElement).click();
+      }
+    });
+
     button.addEventListener("click", () => {
       if (isResetting) return;
       hasUserInteracted = true;
@@ -888,6 +897,25 @@ export function initializeDataCollection(): (() => void) | void {
   let isSubmitting = false;
   let isResetting = false;
 
+  // Setup keyboard navigation for alliance and toggle groups
+  const cleanupKeyboardNavFns: Array<() => void> = [];
+  // dynamic import keyboard utilities to avoid bundler circular deps
+  import("@/utils/keyboardNav")
+    .then(({ setupKeyboardNavigation, makeKeyboardAccessible }) => {
+      cleanupKeyboardNavFns.push(
+        setupKeyboardNavigation(".toggle-button-group", ".toggle-button"),
+      );
+      cleanupKeyboardNavFns.push(
+        setupKeyboardNavigation(".toggle-button-group", ".toggle-button-teleop"),
+      );
+      allianceButtons.forEach((btn) =>
+        makeKeyboardAccessible(btn as HTMLElement),
+      );
+    })
+    .catch(() => {
+      /* optional: keyboard utilities not available */
+    });
+
   // Function to reset form state
   function resetFormState() {
     // Set resetting flag first to prevent any event handlers from triggering validation
@@ -1106,5 +1134,7 @@ export function initializeDataCollection(): (() => void) | void {
   // Return cleanup function
   return () => {
     form.dataset.initialized = "false";
+    // remove keyboard nav handlers if present
+    cleanupKeyboardNavFns.forEach((fn) => fn && fn());
   };
 }

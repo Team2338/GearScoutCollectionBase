@@ -74,6 +74,28 @@ export function usePendingMatches(): UsePendingMatchesReturn {
       update,
       TIMING.PENDING_MATCHES_UPDATE_INTERVAL,
     );
+    // When the browser regains connectivity, attempt an automatic retry
+    const handleOnline = async () => {
+      try {
+        const userDataStr = sessionStorage.getItem(STORAGE_KEYS.CURRENT_USER);
+        if (!userDataStr) return;
+        const parsed = JSON.parse(userDataStr);
+        if (!isValidUser(parsed)) return;
+        // Only attempt if there are pending matches
+        const pending = getPendingMatches(parsed);
+        if (pending.length > 0) {
+          setIsRetrying(true);
+          await submitAllPendingMatches(parsed);
+          const newPending = getPendingMatches(parsed);
+          setPendingCount(newPending.length);
+        }
+      } catch (err) {
+        logger.warn("Auto-retry on online failed:", err);
+      } finally {
+        setIsRetrying(false);
+      }
+    };
+    window.addEventListener("online", handleOnline);
     return () => clearInterval(interval);
   }, []);
 
