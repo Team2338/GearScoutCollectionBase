@@ -1,0 +1,13 @@
+/// <reference types="vite/client" />
+
+interface ImportMetaEnv {
+  readonly VITE_APP_VERSION?: string;
+  readonly VITE_CURRENT_GAME_YEAR?: string;
+  readonly VITE_EVENT_CODE_EXAMPLE?: string;
+  readonly VITE_GEARSCOUT_API_BASE_URL?: string;
+  readonly VITE_API_BASE_URL?: string;
+}
+
+interface ImportMeta {
+  readonly env: ImportMetaEnv;
+}
