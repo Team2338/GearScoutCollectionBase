@@ -66,7 +66,7 @@ function listenForWorkerActivation(config: IConfig): void {
   });
 }
 
-export function unregister(): void {
+function unregister(): void {
   if ("serviceWorker" in navigator) {
     navigator.serviceWorker.ready
       .then((registration) => {
