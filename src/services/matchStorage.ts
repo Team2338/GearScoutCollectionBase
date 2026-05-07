@@ -59,7 +59,8 @@ interface MatchDataToSave {
   matchNumber: number;
   robotNumber: string;
   allianceColor: AllianceColor;
-  // The scored actions for this match, grouped by game mode.
+  // The scored actions/objectives recorded for this match.
+  objectives: IObjective[];
 }
 
 /**
