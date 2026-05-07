@@ -15,36 +15,6 @@ export function sanitizeInput(input: string): string {
 }
 
 /**
- * Sanitize numeric input to ensure it's a valid number
- * @param input - The raw input string
- * @param min - Minimum allowed value
- * @param max - Maximum allowed value
- * @returns Sanitized number or null if invalid
- */
-export function sanitizeNumericInput(
-  input: string,
-  min?: number,
-  max?: number,
-): number | null {
-  const cleaned = input.trim();
-  const num = parseInt(cleaned, 10);
-
-  if (isNaN(num)) {
-    return null;
-  }
-
-  if (min !== undefined && num < min) {
-    return null;
-  }
-
-  if (max !== undefined && num > max) {
-    return null;
-  }
-
-  return num;
-}
-
-/**
  * Sanitize event code to ensure it follows expected format
  * @param input - The raw event code
  * @returns Sanitized event code (lowercase alphanumeric)

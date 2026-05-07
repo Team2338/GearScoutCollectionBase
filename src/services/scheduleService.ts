@@ -116,32 +116,3 @@ export const fetchSchedule = debounce(
   SCHEDULE_FETCH_DEBOUNCE_MS,
 );
 
-/**
- * Get match lineup by match number (1-indexed)
- * @param matchNumber - The match number (starting from 1)
- * @returns The match lineup or null if not found
- */
-export function getMatchLineup(matchNumber: number): IMatchLineup | null {
-  if (!schedule || schedule.length === 0) return null;
-  const matchIndex = matchNumber - 1;
-  if (matchIndex < 0 || matchIndex >= schedule.length) return null;
-  return schedule[matchIndex];
-}
-
-/**
- * Get all teams in a match by match number
- * @param matchNumber - The match number (starting from 1)
- * @returns Object with red and blue alliance teams or null if not found
- */
-export function getTeamsInMatch(matchNumber: number): {
-  red: string[];
-  blue: string[];
-} | null {
-  const lineup = getMatchLineup(matchNumber);
-  if (!lineup) return null;
-
-  return {
-    red: [String(lineup.red1), String(lineup.red2), String(lineup.red3)],
-    blue: [String(lineup.blue1), String(lineup.blue2), String(lineup.blue3)],
-  };
-}

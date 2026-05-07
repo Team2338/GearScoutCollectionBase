@@ -85,14 +85,7 @@ export interface IStoredMatch {
   matchNumber: number;
   robotNumber: string;
   allianceColor: AllianceColor;
-  leftCounter: number;
-  rightCounter: number;
-  leftBumpCounter: number;
-  rightBumpCounter: number;
-  leaveValue: string;
-  estimateSizeAuto: string;
-  leaveValueTeleop: string;
-  estimateSize: string;
+  // The scored actions for this match, grouped by game mode.
   timestamp: number;
   submitted?: boolean;
 }

@@ -4,7 +4,6 @@
 
 import {
   AllianceColor,
-  Gamemode,
   IMatch,
   IMultiMatchStorage,
   IObjective,
@@ -24,7 +23,7 @@ const MULTI_MATCH_STORAGE_KEY = STORAGE_KEYS.MULTI_MATCH_DATA;
  * @param userData - Current user data
  * @returns Multi-match storage structure for the user
  */
-export function getMultiMatchStorage(userData: IUser): IMultiMatchStorage {
+function getMultiMatchStorage(userData: IUser): IMultiMatchStorage {
   try {
     const stored = localStorage.getItem(MULTI_MATCH_STORAGE_KEY);
     if (stored) {
@@ -56,18 +55,11 @@ export function getMultiMatchStorage(userData: IUser): IMultiMatchStorage {
 /**
  * Match data for saving to storage
  */
-export interface MatchDataToSave {
+interface MatchDataToSave {
   matchNumber: number;
   robotNumber: string;
   allianceColor: AllianceColor;
-  leftCounter: number;
-  rightCounter: number;
-  leftBumpCounter: number;
-  rightBumpCounter: number;
-  leaveValue: string;
-  estimateSizeAuto: string;
-  leaveValueTeleop: string;
-  estimateSize: string;
+  // The scored actions/objectives recorded for this match.
 }
 
 /**
@@ -231,69 +223,7 @@ function convertStoredMatchToAPIFormat(
   storedMatch: IStoredMatch,
 ): IMatch {
   const objectives: IObjective[] = [];
-
-  // AUTO objectives
-  objectives.push(
-    {
-      gamemode: Gamemode.AUTO,
-      objective: "DEPOT_TRENCH_2026",
-      count: storedMatch.leftCounter,
-    },
-    {
-      gamemode: Gamemode.AUTO,
-      objective: "OUTPOST_TRENCH_2026",
-      count: storedMatch.rightCounter,
-    },
-    {
-      gamemode: Gamemode.AUTO,
-      objective: "DEPOT_BUMP_2026",
-      count: storedMatch.leftBumpCounter,
-    },
-    {
-      gamemode: Gamemode.AUTO,
-      objective: "OUTPOST_BUMP_2026",
-      count: storedMatch.rightBumpCounter,
-    },
-  );
-
-  // Auto climb - always report, convert to point values
-  const autoClimbCount = storedMatch.leaveValue === "yes" ? 15 : 0;
-  objectives.push({
-    gamemode: Gamemode.AUTO,
-    objective: "CLIMB_2026",
-    count: autoClimbCount,
-  });
-
-  // Auto high goal estimate
-  objectives.push({
-    gamemode: Gamemode.AUTO,
-    objective: "HIGH_GOAL_2026",
-    count: Number(storedMatch.estimateSizeAuto),
-  });
-
-  // TELEOP objectives
-
-  // Teleop climb - always report, convert to point values
-  let teleopClimbCount = 0;
-  if (storedMatch.leaveValueTeleop === "l1") {
-    teleopClimbCount = 10;
-  } else if (storedMatch.leaveValueTeleop === "l2") {
-    teleopClimbCount = 20;
-  } else if (storedMatch.leaveValueTeleop === "l3") {
-    teleopClimbCount = 30;
-  }
-  objectives.push({
-    gamemode: Gamemode.TELEOP,
-    objective: "CLIMB_2026",
-    count: teleopClimbCount,
-  });
-
-  // Teleop high goal estimate
-  objectives.push({
-    gamemode: Gamemode.TELEOP,
-    objective: "HIGH_GOAL_2026",
-    count: Number(storedMatch.estimateSize),
-  });
+  // The scored actions for this match, grouped by game mode.
 
   return {
     gameYear: 2026,

@@ -4,7 +4,7 @@
 
 import { TIMING } from "@/constants";
 
-export type NotificationType = "error" | "success";
+type NotificationType = "error" | "success";
 
 /**
  * Display a notification to the user
@@ -12,7 +12,7 @@ export type NotificationType = "error" | "success";
  * @param type - The notification type (error or success)
  * @param duration - How long to show the notification in milliseconds
  */
-export function showNotification(
+function showNotification(
   message: string,
   type: NotificationType,
   duration: number = TIMING.NOTIFICATION_DURATION_DEFAULT,

@@ -65,29 +65,3 @@ export function getJsonFromSessionStorage<T>(
   }
 }
 
-/**
- * Remove a value from sessionStorage
- * @param key - The storage key to remove
- */
-export function removeFromSessionStorage(key: string): void {
-  try {
-    sessionStorage.removeItem(key);
-  } catch (error) {
-    if (error instanceof Error) {
-      logger.warn("[Session Storage] Error removing:", error.message);
-    }
-  }
-}
-
-/**
- * Clear all sessionStorage data
- */
-export function clearSessionStorage(): void {
-  try {
-    sessionStorage.clear();
-  } catch (error) {
-    if (error instanceof Error) {
-      logger.warn("[Session Storage] Error clearing:", error.message);
-    }
-  }
-}

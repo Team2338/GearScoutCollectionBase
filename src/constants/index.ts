@@ -26,15 +26,7 @@ export const FORM_DATA_KEYS = [
   "matchNumber",
   "scoutedTeamNumber",
   "allianceColor",
-  "leaveValue",
-  "leftCounter",
-  "rightCounter",
-  "leftBumpCounter",
-  "rightBumpCounter",
-  "estimateSizeAuto",
-  "leaveValueTeleop",
-  "cycles",
-  "estimateSize",
+  // The scored actions for this match, grouped by game mode.
 ] as const;
 
 export const API = {

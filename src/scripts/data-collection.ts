@@ -181,10 +181,7 @@ function populateTeamDropdown(matchIndex: number): string | null {
   return null;
 }
 
-let leftCounter = 0;
-let rightCounter = 0;
-let leftBumpCounter = 0;
-let rightBumpCounter = 0;
+// The scored actions for this match, grouped by game mode.
 
 export function initializeDataCollection(): (() => void) | void {
   logger.info("[Data Collection] Initializing...");
@@ -208,13 +205,7 @@ export function initializeDataCollection(): (() => void) | void {
   // The form is wired imperatively, so this flag prevents duplicate listeners in dev mode.
   form.dataset.initialized = "true";
 
-  // Start every new scouting session from a clean counter and estimate state.
-  localStorage.removeItem("leftCounter");
-  localStorage.removeItem("rightCounter");
-  localStorage.removeItem("leftBumpCounter");
-  localStorage.removeItem("rightBumpCounter");
-  localStorage.removeItem("estimateSize");
-  localStorage.removeItem("estimateSizeAuto");
+  // Start every new scouting session from a clean state.
 
   const submitButton = document.querySelector(
   // If a cached schedule exists, reuse it so the dropdown is ready before network fetches finish.
@@ -229,18 +220,7 @@ export function initializeDataCollection(): (() => void) | void {
   const teamNumberDropdown = document.getElementById(
     "team-number-dropdown",
   ) as HTMLSelectElement;
-  const estimateSizeAuto = document.getElementById(
-    "estimate-size-auto",
-  ) as HTMLInputElement;
-  const estimateSizeSelect = document.getElementById(
-    "estimate-size",
-  ) as HTMLInputElement;
-  const autoCurrentEstimateEl = document.getElementById(
-    "auto-current-estimate",
-  );
-  const teleopCurrentEstimateEl = document.getElementById(
-    "teleop-current-estimate",
-  );
+  // The scored actions for this match, grouped by game mode.
 
   // Verify critical elements exist
   if (!matchNumberInput || !teamNumberInput) {
@@ -250,40 +230,8 @@ export function initializeDataCollection(): (() => void) | void {
 
   let selectedAlliance = "";
   let hasUserInteracted = false;
-  let leaveValue = getFromLocalStorage("leaveValue", "no");
-  let leaveValueTeleop = getFromLocalStorage("leaveValueTeleop", "none");
-  let estimateSizeAutoValue = getFromLocalStorage("estimateSizeAuto", "");
-  let estimateSizeValue = getFromLocalStorage("estimateSize", "");
 
-  const updateCurrentEstimateDisplays = () => {
-    if (autoCurrentEstimateEl) {
-      autoCurrentEstimateEl.textContent = `Current Value: ${Number(estimateSizeAutoValue || "0")}`;
-    }
-    if (teleopCurrentEstimateEl) {
-      teleopCurrentEstimateEl.textContent = `Current Value: ${Number(estimateSizeValue || "0")}`;
-    }
-  };
-
-  updateCurrentEstimateDisplays();
-
-  const setCounters = (counters: {
-    leftCounter: number;
-    rightCounter: number;
-    leftBumpCounter: number;
-    rightBumpCounter: number;
-  }) => {
-    form.dataset.leftCounter = String(counters.leftCounter);
-    form.dataset.rightCounter = String(counters.rightCounter);
-    form.dataset.leftBumpCounter = String(counters.leftBumpCounter);
-    form.dataset.rightBumpCounter = String(counters.rightBumpCounter);
-  };
-
-  setCounters({
-    leftCounter,
-    rightCounter,
-    leftBumpCounter,
-    rightBumpCounter,
-  });
+  // The scored actions for this match, grouped by game mode.
 
   const userDataStr = sessionStorage.getItem(STORAGE_KEYS.CURRENT_USER);
   if (!userDataStr) {
@@ -540,338 +488,7 @@ export function initializeDataCollection(): (() => void) | void {
     });
   });
 
-  // Leave toggle functionality (Auto)
-  const leaveToggleButtons = document.querySelectorAll(
-    ".toggle-button-group .toggle-button",
-  );
-  leaveToggleButtons.forEach((button) => {
-    if (button.getAttribute("data-value") === leaveValue) {
-      button.classList.add("selected");
-      button.setAttribute("aria-checked", "true");
-    } else {
-      button.setAttribute("aria-checked", "false");
-    }
-  });
-
-  leaveToggleButtons.forEach((button) => {
-    button.addEventListener("click", () => {
-      leaveToggleButtons.forEach((btn) => {
-        btn.classList.remove("selected");
-        btn.setAttribute("aria-checked", "false");
-      });
-      button.classList.add("selected");
-      button.setAttribute("aria-checked", "true");
-      const dataValue = button.getAttribute("data-value");
-      leaveValue = dataValue ?? "none";
-      saveToLocalStorage("leaveValue", leaveValue);
-    });
-  });
-
-  // Auto estimate size button functionality
-  if (estimateSizeAuto) {
-    const estimateSizeAutoContainer =
-      estimateSizeAuto.parentElement as HTMLElement;
-    const estimateSizeAutoButtons = estimateSizeAutoContainer?.querySelectorAll(
-      ".estimate-button:not(.estimate-button-previous)",
-    ) as NodeListOf<HTMLElement>;
-
-    if (estimateSizeAutoValue) {
-      estimateSizeAutoButtons.forEach((btn) => {
-        if (btn.getAttribute("data-value") === estimateSizeAutoValue) {
-          btn.classList.add("selected");
-          btn.setAttribute("aria-checked", "true");
-        }
-      });
-      estimateSizeAutoContainer?.classList.add("has-value");
-    }
-
-    estimateSizeAutoButtons.forEach((button) => {
-      button.addEventListener("click", () => {
-        const delta = Number(button.getAttribute("data-value") || "0");
-        const nextValue = Math.max(
-          0,
-          Number(estimateSizeAutoValue || "0") + delta,
-        );
-        estimateSizeAutoValue = String(nextValue);
-        estimateSizeAuto.value = estimateSizeAutoValue;
-        saveToLocalStorage("estimateSizeAuto", estimateSizeAutoValue);
-        if (nextValue > 0) {
-          estimateSizeAutoContainer?.classList.add("has-value");
-        } else {
-          estimateSizeAutoContainer?.classList.remove("has-value");
-        }
-        updateCurrentEstimateDisplays();
-      });
-    });
-  }
-
-  // Current Teleop estimate size button functionality
-  if (estimateSizeSelect) {
-    const estimateSizeContainer =
-      estimateSizeSelect.parentElement as HTMLElement;
-    const estimateSizeButtons = estimateSizeContainer?.querySelectorAll(
-      ".estimate-button:not(.estimate-button-previous)",
-    ) as NodeListOf<HTMLElement>;
-
-    if (estimateSizeValue) {
-      estimateSizeButtons.forEach((btn) => {
-        if (btn.getAttribute("data-value") === estimateSizeValue) {
-          btn.classList.add("selected");
-          btn.setAttribute("aria-checked", "true");
-        }
-      });
-      estimateSizeContainer?.classList.add("has-value");
-    }
-
-    estimateSizeButtons.forEach((button) => {
-      button.addEventListener("click", () => {
-        const delta = Number(button.getAttribute("data-value") || "0");
-        const nextValue = Math.max(0, Number(estimateSizeValue || "0") + delta);
-        estimateSizeValue = String(nextValue);
-        estimateSizeSelect.value = estimateSizeValue;
-        saveToLocalStorage("estimateSize", estimateSizeValue);
-        if (nextValue > 0) {
-          estimateSizeContainer?.classList.add("has-value");
-        } else {
-          estimateSizeContainer?.classList.remove("has-value");
-        }
-        updateCurrentEstimateDisplays();
-      });
-    });
-  }
-
-  // Trench counter functionality
-  const leftCounterEl = document.getElementById("left-counter");
-  const rightCounterEl = document.getElementById("right-counter");
-  let leftTrenchBtn = document.querySelector(
-    ".left-trench",
-  ) as HTMLButtonElement | null;
-  let rightTrenchBtn = document.querySelector(
-    ".right-trench",
-  ) as HTMLButtonElement | null;
-  let leftDecrementBtn = document.querySelector(
-    ".left-decrement",
-  ) as HTMLButtonElement | null;
-  let rightDecrementBtn = document.querySelector(
-    ".right-decrement",
-  ) as HTMLButtonElement | null;
-
-  // Clone buttons to remove all previous event listeners
-  if (leftTrenchBtn) {
-    const newBtn = leftTrenchBtn.cloneNode(true) as HTMLButtonElement;
-    leftTrenchBtn.replaceWith(newBtn);
-    leftTrenchBtn = newBtn;
-  }
-  if (rightTrenchBtn) {
-    const newBtn = rightTrenchBtn.cloneNode(true) as HTMLButtonElement;
-    rightTrenchBtn.replaceWith(newBtn);
-    rightTrenchBtn = newBtn;
-  }
-  if (leftDecrementBtn) {
-    const newBtn = leftDecrementBtn.cloneNode(true) as HTMLButtonElement;
-    leftDecrementBtn.replaceWith(newBtn);
-    leftDecrementBtn = newBtn;
-  }
-  if (rightDecrementBtn) {
-    const newBtn = rightDecrementBtn.cloneNode(true) as HTMLButtonElement;
-    rightDecrementBtn.replaceWith(newBtn);
-    rightDecrementBtn = newBtn;
-  }
-
-  if (leftCounterEl) leftCounterEl.textContent = leftCounter.toString();
-  if (rightCounterEl) rightCounterEl.textContent = rightCounter.toString();
-
-  // Debounce handler to prevent rapid clicks from triggering multiple increments
-  let leftTrenchLastClick = 0;
-  let rightTrenchLastClick = 0;
-  let leftDecrementLastClick = 0;
-  let rightDecrementLastClick = 0;
-  const DEBOUNCE_MS = 100; // 100ms debounce
-
-  if (leftTrenchBtn) {
-    leftTrenchBtn.addEventListener("click", () => {
-      const now = Date.now();
-      if (now - leftTrenchLastClick < DEBOUNCE_MS) return;
-      leftTrenchLastClick = now;
-
-      leftCounter++;
-      form.dataset.leftCounter = String(leftCounter);
-      if (leftCounterEl) leftCounterEl.textContent = leftCounter.toString();
-    });
-  }
-
-  if (rightTrenchBtn) {
-    rightTrenchBtn.addEventListener("click", () => {
-      const now = Date.now();
-      if (now - rightTrenchLastClick < DEBOUNCE_MS) return;
-      rightTrenchLastClick = now;
-
-      rightCounter++;
-      form.dataset.rightCounter = String(rightCounter);
-      if (rightCounterEl) rightCounterEl.textContent = rightCounter.toString();
-    });
-  }
-
-  if (leftDecrementBtn) {
-    leftDecrementBtn.addEventListener("click", () => {
-      const now = Date.now();
-      if (now - leftDecrementLastClick < DEBOUNCE_MS) return;
-      leftDecrementLastClick = now;
-
-      if (leftCounter > 0) {
-        leftCounter--;
-        form.dataset.leftCounter = String(leftCounter);
-        if (leftCounterEl) leftCounterEl.textContent = leftCounter.toString();
-      }
-    });
-  }
-
-  if (rightDecrementBtn) {
-    rightDecrementBtn.addEventListener("click", () => {
-      const now = Date.now();
-      if (now - rightDecrementLastClick < DEBOUNCE_MS) return;
-      rightDecrementLastClick = now;
-
-      if (rightCounter > 0) {
-        rightCounter--;
-        form.dataset.rightCounter = String(rightCounter);
-        if (rightCounterEl)
-          rightCounterEl.textContent = rightCounter.toString();
-      }
-    });
-  }
-
-  // Bump counter functionality
-  const leftBumpCounterEl = document.getElementById("left-bump-counter");
-  const rightBumpCounterEl = document.getElementById("right-bump-counter");
-  let leftBumpBtn = document.querySelector(
-    ".left-bump",
-  ) as HTMLButtonElement | null;
-  let rightBumpBtn = document.querySelector(
-    ".right-bump",
-  ) as HTMLButtonElement | null;
-  let leftBumpDecrementBtn = document.querySelector(
-    ".left-bump-decrement",
-  ) as HTMLButtonElement | null;
-  let rightBumpDecrementBtn = document.querySelector(
-    ".right-bump-decrement",
-  ) as HTMLButtonElement | null;
-
-  // Clone buttons to remove all previous event listeners
-  if (leftBumpBtn) {
-    const newBtn = leftBumpBtn.cloneNode(true) as HTMLButtonElement;
-    leftBumpBtn.replaceWith(newBtn);
-    leftBumpBtn = newBtn;
-  }
-  if (rightBumpBtn) {
-    const newBtn = rightBumpBtn.cloneNode(true) as HTMLButtonElement;
-    rightBumpBtn.replaceWith(newBtn);
-    rightBumpBtn = newBtn;
-  }
-  if (leftBumpDecrementBtn) {
-    const newBtn = leftBumpDecrementBtn.cloneNode(true) as HTMLButtonElement;
-    leftBumpDecrementBtn.replaceWith(newBtn);
-    leftBumpDecrementBtn = newBtn;
-  }
-  if (rightBumpDecrementBtn) {
-    const newBtn = rightBumpDecrementBtn.cloneNode(true) as HTMLButtonElement;
-    rightBumpDecrementBtn.replaceWith(newBtn);
-    rightBumpDecrementBtn = newBtn;
-  }
-
-  if (leftBumpCounterEl)
-    leftBumpCounterEl.textContent = leftBumpCounter.toString();
-  if (rightBumpCounterEl)
-    rightBumpCounterEl.textContent = rightBumpCounter.toString();
-
-  // Debounce handler to prevent rapid clicks from triggering multiple increments
-  let leftBumpLastClick = 0;
-  let rightBumpLastClick = 0;
-  let leftBumpDecrementLastClick = 0;
-  let rightBumpDecrementLastClick = 0;
-
-  if (leftBumpBtn) {
-    leftBumpBtn.addEventListener("click", () => {
-      const now = Date.now();
-      if (now - leftBumpLastClick < DEBOUNCE_MS) return;
-      leftBumpLastClick = now;
-
-      leftBumpCounter++;
-      form.dataset.leftBumpCounter = String(leftBumpCounter);
-      if (leftBumpCounterEl)
-        leftBumpCounterEl.textContent = leftBumpCounter.toString();
-    });
-  }
-
-  if (rightBumpBtn) {
-    rightBumpBtn.addEventListener("click", () => {
-      const now = Date.now();
-      if (now - rightBumpLastClick < DEBOUNCE_MS) return;
-      rightBumpLastClick = now;
-
-      rightBumpCounter++;
-      form.dataset.rightBumpCounter = String(rightBumpCounter);
-      if (rightBumpCounterEl)
-        rightBumpCounterEl.textContent = rightBumpCounter.toString();
-    });
-  }
-
-  if (leftBumpDecrementBtn) {
-    leftBumpDecrementBtn.addEventListener("click", () => {
-      const now = Date.now();
-      if (now - leftBumpDecrementLastClick < DEBOUNCE_MS) return;
-      leftBumpDecrementLastClick = now;
-
-      if (leftBumpCounter > 0) {
-        leftBumpCounter--;
-        form.dataset.leftBumpCounter = String(leftBumpCounter);
-        if (leftBumpCounterEl)
-          leftBumpCounterEl.textContent = leftBumpCounter.toString();
-      }
-    });
-  }
-
-  if (rightBumpDecrementBtn) {
-    rightBumpDecrementBtn.addEventListener("click", () => {
-      const now = Date.now();
-      if (now - rightBumpDecrementLastClick < DEBOUNCE_MS) return;
-      rightBumpDecrementLastClick = now;
-
-      if (rightBumpCounter > 0) {
-        rightBumpCounter--;
-        form.dataset.rightBumpCounter = String(rightBumpCounter);
-        if (rightBumpCounterEl)
-          rightBumpCounterEl.textContent = rightBumpCounter.toString();
-      }
-    });
-  }
-
-  // Teleop Climb toggle functionality
-  const leaveToggleButtonsTeleop = document.querySelectorAll(
-    ".toggle-button-group .toggle-button-teleop",
-  );
-  leaveToggleButtonsTeleop.forEach((button) => {
-    if (button.getAttribute("data-value") === leaveValueTeleop) {
-      button.classList.add("selected");
-      button.setAttribute("aria-checked", "true");
-    } else {
-      button.setAttribute("aria-checked", "false");
-    }
-  });
-
-  leaveToggleButtonsTeleop.forEach((button) => {
-    button.addEventListener("click", () => {
-      leaveToggleButtonsTeleop.forEach((btn) => {
-        btn.classList.remove("selected");
-        btn.setAttribute("aria-checked", "false");
-      });
-      button.classList.add("selected");
-      button.setAttribute("aria-checked", "true");
-      const dataValue = button.getAttribute("data-value");
-      leaveValueTeleop = dataValue ?? "none";
-      saveToLocalStorage("leaveValueTeleop", leaveValueTeleop);
-    });
-  });
+  // The scored actions for this match, grouped by game mode.
 
   // Check if form is pre-filled with valid data on initialization
   // If all required fields have values, enable the submit button
@@ -922,16 +539,10 @@ export function initializeDataCollection(): (() => void) | void {
     isResetting = true;
     hasUserInteracted = false;
 
-    // Clear current form state including cycles and counters
+    // Clear current form state including cycles
     clearFormDataFromLocalStorage();
     localStorage.removeItem("cycles");
     localStorage.removeItem("autoCycles");
-
-    // Explicitly clear counter values from localStorage to ensure clean state
-    localStorage.removeItem("leftCounter");
-    localStorage.removeItem("rightCounter");
-    localStorage.removeItem("leftBumpCounter");
-    localStorage.removeItem("rightBumpCounter");
 
     // Reset form UI
     form.reset();
@@ -946,62 +557,12 @@ export function initializeDataCollection(): (() => void) | void {
       allianceSection.classList.remove("has-error");
     }
 
-    // Reset counters both locally and on the form dataset
-    leftCounter = 0;
-    rightCounter = 0;
-    leftBumpCounter = 0;
-    rightBumpCounter = 0;
-    form.dataset.leftCounter = "0";
-    form.dataset.rightCounter = "0";
-    form.dataset.leftBumpCounter = "0";
-    form.dataset.rightBumpCounter = "0";
-
-    if (leftCounterEl) leftCounterEl.textContent = "0";
-    if (rightCounterEl) rightCounterEl.textContent = "0";
-    if (leftBumpCounterEl) leftBumpCounterEl.textContent = "0";
-    if (rightBumpCounterEl) rightBumpCounterEl.textContent = "0";
+    // The scored actions for this match, grouped by game mode.
 
     allianceButtons.forEach((btn) => btn.classList.remove("selected"));
     selectedAlliance = "";
 
-    leaveToggleButtons.forEach((btn) => btn.classList.remove("selected"));
-    leaveToggleButtons[0]?.classList.add("selected");
-    leaveValue = "no";
-    leaveToggleButtonsTeleop.forEach((btn) => btn.classList.remove("selected"));
-    leaveToggleButtonsTeleop[0]?.classList.add("selected");
-    leaveValueTeleop = "none";
-
-    if (estimateSizeAuto) {
-      estimateSizeAuto.value = "";
-      const estimateSizeAutoContainer =
-        estimateSizeAuto.parentElement as HTMLElement;
-      const estimateSizeAutoButtons =
-        estimateSizeAutoContainer?.querySelectorAll(
-          ".estimate-button:not(.estimate-button-previous)",
-        ) as NodeListOf<HTMLElement>;
-      estimateSizeAutoButtons.forEach((btn) => {
-        btn.classList.remove("selected");
-        btn.setAttribute("aria-checked", "false");
-      });
-      estimateSizeAutoContainer?.classList.remove("has-value");
-    }
-    estimateSizeAutoValue = "";
-
-    if (estimateSizeSelect) {
-      estimateSizeSelect.value = "";
-      const estimateSizeContainer =
-        estimateSizeSelect.parentElement as HTMLElement;
-      const estimateSizeButtons = estimateSizeContainer?.querySelectorAll(
-        ".estimate-button:not(.estimate-button-previous)",
-      ) as NodeListOf<HTMLElement>;
-      estimateSizeButtons.forEach((btn) => {
-        btn.classList.remove("selected");
-        btn.setAttribute("aria-checked", "false");
-      });
-      estimateSizeContainer?.classList.remove("has-value");
-    }
-    estimateSizeValue = "";
-    updateCurrentEstimateDisplays();
+    // The scored actions for this match, grouped by game mode.
 
     formFields.forEach((field) => field.classList.remove("has-value"));
 
@@ -1091,14 +652,6 @@ export function initializeDataCollection(): (() => void) | void {
           matchNumber,
           robotNumber,
           allianceColor,
-          leftCounter,
-          rightCounter,
-          leftBumpCounter,
-          rightBumpCounter,
-          leaveValue,
-          estimateSizeAuto: estimateSizeAutoValue,
-          leaveValueTeleop,
-          estimateSize: estimateSizeValue,
         });
 
         showSuccess("Match data saved locally!");
